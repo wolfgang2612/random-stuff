@@ -1,0 +1,52 @@
+// progress_pie.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include <iostream>
+#define _USE_MATH_DEFINES
+#include <math.h>
+
+using namespace std;
+
+bool calcPerc(int x, int y,int percent)
+{
+	if ((x > 50) && (y > 50))
+		return (((90.0 - (atan(((double)y - 50.0) / ((double)x - 50.0)) / M_PI*180.0)) / 360.0*100) < percent);
+	if((x > 50) && (y < 50))
+		return (((180.0 + (atan(((double)y - 50.0) / ((double)x - 50.0)) / M_PI*180.0)) / 360.0*100)<percent);
+	if ((x < 50) && (y < 50))
+		return (((270.0 - (atan(((double)y - 50.0) / ((double)x - 50.0)) / M_PI*180.0)) / 360.0 * 100) < percent);
+	if((x < 50) && (y > 50))
+		return (((360.0 - (atan(((double)y - 50.0) / ((double)x - 50.0)) / M_PI*180.0)) / 360.0*100)<percent);
+}
+
+int main()
+{
+
+	int points, percent, x, y;
+	cin >> points;
+	for (int i = 0;i < points;i++)
+	{
+		cin >> percent >> x >> y;
+		if (percent != 50)
+		{
+			if (((x-50)*(x-50) + (y-50)*(y-50) <= 2500) && calcPerc(x,y,percent))
+			{
+				cout << "Case #" << i+1 << ": black" << endl;
+			}
+
+			else cout << "Case #" << i+1 << ": white" << endl;
+		}
+
+		else
+		{
+			if ((x*x + y*y <= 10000) && (x>50))
+				cout << "Case #" << i+1 << ": black" << endl;
+
+			else cout << "Case #" << i+1 << ": white" << endl;
+		}
+	}
+
+    return 0;
+}
+
