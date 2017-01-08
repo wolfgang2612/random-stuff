@@ -1,0 +1,233 @@
+// gunjanPolygon.cpp : Defines the entry point for the console application.
+#include "stdafx.h"
+#include <iostream>
+
+using namespace std;
+
+//takes 2 coordinates and outputs the constants a , b and c of eqn ax+by+c=0
+void lineMaker(double x1, double y1, double x2, double y2,double *a,double *b,double *c)
+{
+	*a = y2 - y1;
+	*b = x1 - x2;
+	*c = ((x2*y1) - (x1*y2));
+}
+
+//takes the a,b,c of two line segments and finds out the intersection points inside the segments
+bool lineIntersect(double a1, double b1, double c1, double a2, double b2, double c2, double x11, double x21, double y11, double y21,double xPoint,double yPoint,int n)
+{
+	//compute intersection points
+	double x = ((double)((b1*c2) - (b2*c1))) / ((double)((a1*b2) - (a2*b1)));
+	double y = ((double)((a1*c2) - (a2*c1))) / ((double)((a2*b1) - (a1*b2)));
+
+	//swapping variable
+	double t;
+
+	//make the first coordinate smaller than the second
+	if (x21 < x11)
+	{
+		t = x21;
+		x21 = x11;
+		x11 = t;
+	}
+	if (y21 < y11)
+	{
+		t = y21;
+		y21 = y11;
+		y11 = t;
+	}
+
+	switch (n)	//on the polygon is inside
+	{
+	case 0://down - the y coordinate of intersection point should be less than the reference point
+		   //(we are taking the axes as normal axes, not computer graphics axes)
+			   if ((x>=x11)&&(x<x21)&&(y>=y11)&&(y<=y21)&&(yPoint>y))
+				   return true;
+				else return false;
+				break;
+	case 1://up - the y coordinate of intersection point should be more than the reference point
+			   if ((x>=x11)&&(x<x21)&&(y>=y11)&&(y<=y21)&&(yPoint<y))
+				   return true;
+			   else return false;
+			   break;
+
+	case 2://right - the x coordinate of intersection point should be more than reference point
+			   if ((x>=x11)&&(x<=x21)&&(y>=y11)&&(y<y21)&&(xPoint<x))
+				   return true;
+			   else return false;
+			   break;
+
+	case 3://left - the x coordinate of intersection point should be less than reference point
+			   if ((x>=x11)&&(x<=x21)&&(y>=y11)&&(y<y21)&&(xPoint>x))
+				   return true;
+			   else return false;
+			   break;
+	}
+}
+
+//consumes a,b of two lines and returns true if the two lines are not parallel
+bool checkNotParallel(double a1, double a2, double b1, double b2)
+{
+	if (((a1*b2) == (a2*b1)))return false;
+	else return true;
+}
+
+//consumes a number and returns true if its even
+bool checkEven(int n)
+{
+	if(!(n%2))return true;
+	else return false;
+}
+
+
+int main()
+{
+	double xPoint,yPoint,a,b,c = 0.0;		//x and y coordinates of the point and line constants
+	int counter = 0;						//a counter variable
+	int n =0;								//number of vertices
+	int DOWN = 0;							//ray emenating from the point and going down 
+	int UP = 1;								//going up
+	int RIGHT = 2;							//going right
+	int LEFT = 3;							//going lefts
+
+	cout << "Enter number of vertices: (At least 3)\r\n";
+	cin >> n;
+
+	double x[1000];							//c++ doesnt let me statically initialize double x[n]
+	double y[1000];							//will have to do so with dynamic allocation
+	memset(x,0,1000);
+	memset(y,0,1000);
+
+	//should be a polygon
+	if(n<3)
+	{
+		cout << "Please enter at least 3 vertices\r\n";
+		return 0;
+	}
+
+	cout << "Enter coordinates in a cyclic fashion , this is important\r\n";
+
+	//input coordinates
+	while(counter<n)
+	{
+		cout<< "Input the " << counter << " vertex - x coordinate\r\n";
+		cin >> x[counter];
+		cout<< "Input the " << counter << " vertex - y coordinate\r\n";
+		cin >> y[counter];
+		counter += 1;
+	}
+	    
+	//input coordinates of the point
+	cout << "Input the x coordinate of the point\r\n";
+	cin >> xPoint;
+	cout << "Input the y coordinate of the point\r\n";
+	cin >> yPoint;
+
+	//check if all coordinates are distinct
+	for(int i = 0; i < n; i ++)
+	{
+		for(int j = 0; j < n; j++)
+		{
+			if(!(i==j))
+			{
+				if(((x[i]==x[j])&&(y[i]==y[j])))
+				{
+					cout << "One or more coordinates are same!! " << i << " and " << j << "\r\n";
+					return 0;
+				}
+			}
+		}
+	}
+
+	//this was needed for cyclization : while making lines from 1st to 2nd , 2nd to 3rd coordinate , the last coordinate makes line with first coordinate
+	x[n] = x[0];
+	y[n] = y[0];
+
+	//line constants for the line passing through the point and perpendicular to x axis(ax=by+c=0)
+	double aPointX = 1; //perp to x
+	double bPointX = 0;
+	double cPointX = -xPoint;
+
+	//line constants for the line passing through the point and perpendicular to y axis(ax+by+c=0)
+	double aPointY = 0; //perp to y
+	double bPointY = 1;
+	double cPointY = -yPoint;
+
+	counter = 0;
+
+	//check if point is a vertex
+	for(int i = 0; i < n; i ++)
+	{
+		if((xPoint==x[i])&&(yPoint==y[i]))
+		{
+			cout << "Point is inside the polygon!\r\n";
+			return 0;
+		}
+	}
+
+	//check intersection of all lines with the down ray
+	if(counter == 0)//this if is unnecesary , but i just kept it for consistency
+	{
+	for(int i = 0; i < n ; i++)
+	{
+		a=b=c=0;
+		lineMaker(x[i],y[i],x[i+1],y[i+1],&a,&b,&c);
+		if(checkNotParallel(a,aPointX,b,bPointX))
+		{
+			if(lineIntersect(a,b,c,aPointX,bPointX,cPointX,x[i],x[i+1],y[i],y[i+1],xPoint,yPoint,DOWN))
+				counter+=1;
+		}
+	}
+	}
+
+	//check intersection of all lines with the up ray - if no intersection was found with down ray
+	if(counter==0)
+	{
+
+		for(int i = 0; i < n ; i++)
+		{
+			a=b=c=0;
+			lineMaker(x[i],y[i],x[i+1],y[i+1],&a,&b,&c);
+			if(checkNotParallel(a,aPointX,b,bPointX))
+			{
+				if(lineIntersect(a,b,c,aPointX,bPointX,cPointX,x[i],x[i+1],y[i],y[i+1],xPoint,yPoint,UP))counter+=1;
+			}
+		}
+
+	}
+
+	//check intersection of all lines with the right ray - if no intersection found with both up and down ray
+	if(counter==0)
+	{
+		for(int i = 0; i < n ; i++)
+		{
+			a=b=c=0;
+			lineMaker(x[i],y[i],x[i+1],y[i+1],&a,&b,&c);
+			if(checkNotParallel(a,aPointY,b,bPointY))
+			{
+				if(lineIntersect(a,b,c,aPointY,bPointY,cPointY,x[i],x[i+1],y[i],y[i+1],xPoint,yPoint,RIGHT))counter+=1;
+			}
+		}
+	}
+
+	//check intersection of all lines with the left ray - if no intersection found with up,down,or right ray
+	if(counter==0)
+	{
+
+		for(int i = 0; i < n ; i++)
+		{
+			a=b=c=0;
+			lineMaker(x[i],y[i],x[i+1],y[i+1],&a,&b,&c);
+			if(checkNotParallel(a,aPointY,b,bPointY))
+			{
+				if(lineIntersect(a,b,c,aPointY,bPointY,cPointY,x[i],x[i+1],y[i],y[i+1],xPoint,yPoint,LEFT))counter+=1;
+			}
+		}
+	}
+
+	//if number of intersections are even , then its outside , if odd then inside
+	if(checkEven(counter))cout << "Point is outside the polygon!\r\n";
+	else cout << "Point is inside the polygon!\r\n";
+
+	return 0;
+}
+
