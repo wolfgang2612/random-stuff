@@ -1,0 +1,63 @@
+/*
+Ashutosh Mishra 1601CS06
+Date: 18 February 2017
+Objective: To find all unique combinations of bowling orders given constraints on the overs, bowlers, and max overs per bowler
+*/
+#include <stdio.h>
+#include <stdbool.h>
+
+//this function uses backtracking to compute all unique combinations
+//it takes overs,bowlers,max_over per bowler,sum of overs,counter(defines the level of current recursion),the output array,and the previous parent value
+void strategy(int overs,int bowlers,int max_overs,int sum,int counter,int output[],int prev)
+{
+	//i,j are loop vars
+	int i,j;
+	//base condition of recusion
+	//if the sum of overs is equal to inputted overs, and the level of recursion is at least the number of bowlers,
+	//print the combination and backtrack to last condition by setting sum as the previous level sum and the last digit as zero
+	if(sum==overs&&counter>=bowlers-1)
+		{
+		printf("\r\n");
+		for(i=0;i<bowlers;i++)
+			printf("%d ",output[i]);
+		sum -= output[counter];
+		output[bowlers-1] = 0;
+		}
+	//if not base condition
+	else
+	{
+		//give each player max overs of upper level in recursion
+		for(j=prev;j>0;j--)
+		{	
+			//check if subsequent levels are able to fill the overs
+			if(max_overs*(bowlers-(counter+1)) >= overs -  sum - j)
+			{
+				//if the sum is less than the max overs, add the current j to sum
+				if(sum+j <= overs)
+				{
+					output[counter] = j;
+					sum += output[counter];
+					//recursive call
+			    		strategy(overs,bowlers,max_overs,sum,counter+1,output,j);
+					//backtracking
+			    		sum -= output[counter];
+				}
+			}
+		}
+	}
+}
+
+int main(void) {
+	//overs is max overs, bowlers is number of bowlers, max_overs is max over per bowler, output is the output array
+	int overs,bowlers,max_overs,output[10000]={0};
+	//take input
+	printf("Total overs: ");
+	scanf("%d",&overs);
+	printf("Maximum number of overs for one bowler: ");
+	scanf("%d",&max_overs);
+	printf("Number of bowlers: ");
+	scanf("%d",&bowlers);
+	//call the function to print all combinations
+	strategy(overs,bowlers,max_overs,0,0,output,max_overs);
+	return 0;
+}
