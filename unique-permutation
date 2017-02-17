@@ -1,0 +1,92 @@
+/*
+Ashutosh Mishra 1601CS06
+Date : 18th February 2017
+Objective : To find all unique permutations of a given character array
+*/
+
+#include <stdio.h>
+#include <stdbool.h>
+
+//swapping function
+void swap(char *a, char *b)
+{
+	char temp = *a;
+	*a=*b;
+	*b=temp;
+}
+
+//sorting function
+void sort(int n,char arr[])
+{
+	int i,j;
+	for(i=0;i<n;i++)
+		for(j=i+1;j<n;j++)
+			if(arr[j]<arr[i])swap(&arr[j],&arr[i]);
+}
+
+//this function takes an array, takes two indices, and swaps the elements between those indices
+void reverse(char arr[],int start,int end)
+{
+	int i;
+	for(i=0;i<=(end-start)/2;i++)
+		swap(&arr[start+i],&arr[end-i]);
+}
+
+//computes the next lexicographical permutation. since it computes next permutation, duplication is automatically avoided
+bool next_lex_permute(int n, char arr[])
+{
+	//find largest index such that arr[i]>arr[i-1]
+	int i=-1,j,temp,k;
+	for(i=n-1;i>0;i--)
+		if(arr[i]>arr[i-1])break;
+	//if its not the last element, find the next lexicographical permutation
+	if(i>0)
+	{
+		for(j=n-1;j>=i;j--)
+			if(arr[j]>arr[i-1])break;
+		swap(&arr[j],&arr[i-1]);
+		reverse(arr,i,n-1);
+		printf(",");
+		for(j=0;j<n;j++)
+			printf("%c",arr[j]);
+		return true;
+	}
+	//if it is the last element, return false as all permutations have already been done
+	else return false;
+}
+
+//this will print permutations till the last permutation is reached
+void print(int n,char arr[])
+{
+	while(next_lex_permute(n,arr));
+}
+
+int main(void) {
+	//n=number of letter, i = loop var
+	int n,i;
+	//a character array for storing the input letters
+	char arr[5];
+	//take input
+	printf("Enter number of letters:");
+	scanf("%d",&n);
+	printf("Enter the letters:");
+	scanf("\n");
+	for(i=0;i<n;i++)
+	{
+		if(i==0)
+			scanf("%c",&arr[i]);
+		else
+			scanf(",%c",&arr[i]);
+	}
+	//if we sort the array, then when next_lex_permute returns false, it is guaranteed that its the last permutation
+	sort(n,arr);
+	//call the print function to print the permutations
+	printf("\r\nThe possible words are: ");
+	for(i=0;i<n;i++)
+			printf("%c",arr[i]);
+	//print the first permutation
+	print(n,arr);
+	//print all next permutations
+	printf("\r\n");
+	return 0;
+}
